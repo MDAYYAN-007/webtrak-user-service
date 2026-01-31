@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/webtrak_user
+    username: postgres
+    password: Dayyan@6
+
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+
+  security:
+    jwt:
+      secret: Wvl7+TD7zbOxcZ8hnx8KFUeWjVjg06nBtr7mV6wPF+7NfN5uGuwhWRqdHAXxfztb1tGziX+b9en7qryY1eZbog==
+      expiration: 3600000
