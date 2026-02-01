@@ -2,55 +2,94 @@ package com.webtrak.user_service.exception;
 
 import com.webtrak.user_service.dto.response.ApiResponse;
 import com.webtrak.user_service.dto.response.ApiStatus;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 
-    // 🔴 Generic runtime errors (fallback)
-    @ExceptionHandler(RuntimeException.class)
-    public ResponseEntity<ApiResponse<Object>> handleRuntimeException(
-            RuntimeException ex
+    // Validation errors (DTO fields)
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ApiResponse<Object>> handleValidationErrors(
+            MethodArgumentNotValidException ex
     ) {
-        ApiResponse<Object> response = new ApiResponse<>(
-                new ApiStatus(400, "ERROR"),
-                ex.getMessage(),
-                null
-        );
+        Map<String, String> errors = new HashMap<>();
 
-        return ResponseEntity.badRequest().body(response);
+        ex.getBindingResult().getFieldErrors()
+                .forEach(error ->
+                        errors.put(error.getField(), error.getDefaultMessage())
+                );
+
+        return ResponseEntity.badRequest().body(
+                new ApiResponse<>(
+                        new ApiStatus(400, "VALIDATION_ERROR"),
+                        "Invalid request data",
+                        errors
+                )
+        );
     }
 
-    // 🔴 Illegal arguments (bad input)
+    // Business / input errors
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ApiResponse<Object>> handleIllegalArgument(
             IllegalArgumentException ex
     ) {
-        ApiResponse<Object> response = new ApiResponse<>(
-                new ApiStatus(400, "ERROR"),
-                ex.getMessage(),
-                null
+        return ResponseEntity.badRequest().body(
+                new ApiResponse<>(
+                        new ApiStatus(400, "BAD_REQUEST"),
+                        ex.getMessage(),
+                        null
+                )
         );
-
-        return ResponseEntity.badRequest().body(response);
     }
 
-    // 🔴 Any unexpected exception
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ApiResponse<Object>> handleException(
-            Exception ex
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiResponse<Object>> handleDataIntegrityViolation(
+            DataIntegrityViolationException ex
     ) {
-        ApiResponse<Object> response = new ApiResponse<>(
-                new ApiStatus(500, "ERROR"),
-                "Internal server error",
-                null
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                new ApiResponse<>(
+                        new ApiStatus(409, "CONFLICT"),
+                        "Email or employee ID already exists",
+                        null
+                )
         );
+    }
 
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(response);
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiResponse<Object>> handleBadCredentials(
+            BadCredentialsException ex
+    ) {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(
+                new ApiResponse<>(
+                        new ApiStatus(401, "AUTH_FAILED"),
+                        ex.getMessage(),
+                        null
+                )
+        );
+    }
+
+    // Generic fallback
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponse<Object>> handleException(Exception ex) {
+
+        ex.printStackTrace(); // acceptable for now
+
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(
+                new ApiResponse<>(
+                        new ApiStatus(500, "ERROR"),
+                        "Internal server error",
+                        null
+                )
+        );
     }
 }

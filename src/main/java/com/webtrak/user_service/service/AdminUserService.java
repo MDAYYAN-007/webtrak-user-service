@@ -15,15 +15,19 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-public class UserService {
+public class AdminUserService {
 
     private final UserRepository userRepository;
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
+    private static final String PASSWORD_REGEX = "^(?=.*[A-Za-z])(?=.*\\d).{8,}$";
+
 
     public User createUser(String employeeId, String email, UserType userType) {
 
-        if (userRepository.existsByEmail(email)) {
+        String normalizedEmail = email.trim().toLowerCase();
+
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new RuntimeException("Email already exists");
         }
 
@@ -31,11 +35,17 @@ public class UserService {
             throw new RuntimeException("Employee ID already exists");
         }
 
-        String tempPassword = "Temp@123"; // later generate properly
+        String tempPassword = "Temp@123";
+
+        if (!tempPassword.matches(PASSWORD_REGEX)) {
+            throw new IllegalArgumentException(
+                    "Password must be at least 8 characters and contain at least one number"
+            );
+        }
 
         User user = User.builder()
                 .employeeId(employeeId)
-                .email(email)
+                .email(normalizedEmail)
                 .password(passwordEncoder.encode(tempPassword))
                 .userType(userType)
                 .status(UserStatus.ACTIVE)

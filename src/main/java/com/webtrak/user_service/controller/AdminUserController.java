@@ -6,7 +6,8 @@ import com.webtrak.user_service.dto.response.ApiStatus;
 import com.webtrak.user_service.dto.response.UserResponse;
 import com.webtrak.user_service.entity.User;
 import com.webtrak.user_service.enums.UserStatus;
-import com.webtrak.user_service.service.UserService;
+import com.webtrak.user_service.service.AdminUserService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,10 +20,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AdminUserController {
 
-    private final UserService userService;
+    private final AdminUserService userService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<Object>> createUser(
+            @Valid
             @RequestBody CreateUserRequest request
     ) {
 
