@@ -2,6 +2,7 @@ package com.webtrak.user_service.service;
 
 import com.webtrak.user_service.entity.User;
 import com.webtrak.user_service.enums.UserStatus;
+import com.webtrak.user_service.exception.AccountNotActivatedException;
 import com.webtrak.user_service.repository.UserRepository;
 import com.webtrak.user_service.repository.UserRoleRepository;
 import com.webtrak.user_service.security.JwtUtil;
@@ -32,6 +33,16 @@ public class AuthService {
 
         User user = userRepository.findByEmail(normalizedEmail)
                 .orElseThrow(() -> new BadCredentialsException(AUTH_ERROR_MSG));
+
+        if (user.getStatus() == UserStatus.PENDING) {
+            throw new AccountNotActivatedException(
+                    "Account not activated. Please reset your password to activate your account."
+            );
+        }
+
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            throw new BadCredentialsException(AUTH_ERROR_MSG);
+        }
 
         if (user.getStatus() != UserStatus.ACTIVE) {
             throw new BadCredentialsException(AUTH_ERROR_MSG);

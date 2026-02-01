@@ -20,6 +20,7 @@ public class PasswordService {
     private final UserRepository userRepository;
     private final PasswordResetOtpRepository otpRepository;
     private final PasswordEncoder passwordEncoder;
+    private final EmailService emailService;
 
     private static final int OTP_EXPIRY_MINUTES = 10;
     private static final int OTP_COOLDOWN_MINUTES = 2;
@@ -64,7 +65,7 @@ public class PasswordService {
         otpRepository.save(resetOtp);
 
         log.info("Password reset OTP generated for userId={}", user.getId());
-        System.out.println("PASSWORD RESET OTP = " + otp); // dev only
+        emailService.sendOtpEmail(user.getEmail(), otp);
     }
 
     public void resetPassword(String email, String otp, String newPassword) {
