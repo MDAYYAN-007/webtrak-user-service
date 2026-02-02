@@ -33,7 +33,6 @@ public class PasswordService {
 
         User user = userRepository.findByEmail(normalizedEmail).orElse(null);
 
-        // Security: do not reveal user existence
         if (user == null) {
             log.info("Password reset requested for non-existing email");
             return;

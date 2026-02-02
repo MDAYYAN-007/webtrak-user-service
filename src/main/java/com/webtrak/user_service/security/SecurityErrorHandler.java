@@ -18,7 +18,6 @@ public class SecurityErrorHandler
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    // 🔴 401 - Not authenticated
     @Override
     public void commence(
             HttpServletRequest request,
@@ -37,7 +36,6 @@ public class SecurityErrorHandler
         response.getWriter().write(objectMapper.writeValueAsString(apiResponse));
     }
 
-    // 🔴 403 - Authenticated but not allowed
     @Override
     public void handle(
             HttpServletRequest request,
