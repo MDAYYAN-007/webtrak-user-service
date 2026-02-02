@@ -48,9 +48,6 @@ public class User {
     @Column(nullable = false)
     private UserStatus status;
 
-    @Column(name = "profile_pic_url")
-    private String profilePicUrl;
-
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

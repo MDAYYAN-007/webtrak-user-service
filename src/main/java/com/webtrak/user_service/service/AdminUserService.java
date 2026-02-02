@@ -1,5 +1,6 @@
 package com.webtrak.user_service.service;
 
+import com.webtrak.user_service.dto.request.AdminUpdateUserRequest;
 import com.webtrak.user_service.dto.response.BulkUploadResult;
 import com.webtrak.user_service.entity.User;
 import com.webtrak.user_service.entity.UserRole;
@@ -66,15 +67,12 @@ public class AdminUserService {
             UserType userType,
             Role role
     ) {
-        // Step 1: filter by status + userType
         List<User> users = userRepository.findUsers(status, userType);
 
-        // Step 2: if role filter not requested → done
         if (role == null) {
             return users;
         }
 
-        // Step 3: filter by role
         List<Long> userIdsWithRole = userRoleRepository.findUserIdsByRole(role);
 
         return users.stream()
@@ -146,14 +144,12 @@ public class AdminUserService {
 
             while ((line = reader.readLine()) != null) {
 
-                // skip empty lines
                 if (line.trim().isEmpty()) {
                     continue;
                 }
 
                 totalRows++;
 
-                // skip header
                 if (!headerSkipped) {
                     headerSkipped = true;
                     continue;
@@ -238,6 +234,42 @@ public class AdminUserService {
                         .role(Role.EMPLOYEE)
                         .build()
         );
+    }
+
+    @Transactional
+    public User updateUserByAdmin(Long userId, AdminUpdateUserRequest request) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        if (request.getEmail() != null) {
+            String normalizedEmail = request.getEmail().trim().toLowerCase();
+
+            if (normalizedEmail.isEmpty()) {
+                throw new IllegalArgumentException("Email cannot be empty");
+            }
+
+            if (!normalizedEmail.equals(user.getEmail())
+                    && userRepository.existsByEmail(normalizedEmail)) {
+                throw new IllegalArgumentException("Email already exists");
+            }
+
+            user.setEmail(normalizedEmail);
+        }
+
+        if (request.getName() != null) {
+            user.setName(request.getName());
+        }
+
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
+        }
+
+        if (request.getUserType() != null) {
+            user.setUserType(request.getUserType());
+        }
+
+        return userRepository.save(user);
     }
 
 }
