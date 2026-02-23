@@ -17,7 +17,6 @@ public class UserResponse {
     private String phone;
     private String userType;
     private String status;
-    private String profilePicUrl;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 
@@ -30,7 +29,6 @@ public class UserResponse {
                 user.getPhone(),
                 user.getUserType().name(),
                 user.getStatus().name(),
-                user.getProfilePicUrl(),
                 user.getCreatedAt(),
                 user.getUpdatedAt()
         );

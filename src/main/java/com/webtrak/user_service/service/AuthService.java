@@ -2,11 +2,13 @@ package com.webtrak.user_service.service;
 
 import com.webtrak.user_service.entity.User;
 import com.webtrak.user_service.enums.UserStatus;
+import com.webtrak.user_service.exception.AccountNotActivatedException;
 import com.webtrak.user_service.repository.UserRepository;
 import com.webtrak.user_service.repository.UserRoleRepository;
 import com.webtrak.user_service.security.JwtUtil;
 import com.webtrak.user_service.service.model.LoginResult;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,17 +23,33 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
 
+    private static final String AUTH_ERROR_MSG = "Invalid email or password";
+
     public User authenticate(String email, String rawPassword) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+        String normalizedEmail = email == null
+                ? null
+                : email.trim().toLowerCase();
+
+        User user = userRepository.findByEmail(normalizedEmail)
+                .orElseThrow(() -> new BadCredentialsException(AUTH_ERROR_MSG));
+
+        if (user.getStatus() == UserStatus.PENDING) {
+            throw new AccountNotActivatedException(
+                    "Account not activated. Please reset your password to activate your account."
+            );
+        }
+
+        if (user.getStatus() == UserStatus.INACTIVE) {
+            throw new BadCredentialsException(AUTH_ERROR_MSG);
+        }
 
         if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new RuntimeException("User is inactive");
+            throw new BadCredentialsException(AUTH_ERROR_MSG);
         }
 
         if (!passwordEncoder.matches(rawPassword, user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            throw new BadCredentialsException(AUTH_ERROR_MSG);
         }
 
         return user;

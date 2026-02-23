@@ -3,21 +3,26 @@ package com.webtrak.user_service.dto.request;
 import com.webtrak.user_service.enums.UserType;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
-public class CreateUserRequest {
+public class AdminUpdateUserRequest {
 
-    @NotBlank(message = "Employee ID is required")
-    private String employeeId;
-
-    @NotBlank(message = "Email is required")
     @Email(message = "Invalid email format")
     private String email;
 
-    @NotNull(message = "User type is required")
+    @Size(max = 100, message = "Name too long")
+    private String name;
+
+    @Pattern(
+            regexp = "^[0-9]{10}$",
+            message = "Phone must be 10 digits"
+    )
+    private String phone;
+
     private UserType userType;
 }

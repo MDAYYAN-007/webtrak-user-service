@@ -34,7 +34,6 @@ public class User {
     @Column(nullable = false)
     private String email;
 
-    @Column(nullable = false)
     private String password;
 
     private String name;
@@ -48,9 +47,6 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserStatus status;
-
-    @Column(name = "profile_pic_url")
-    private String profilePicUrl;
 
     @CreationTimestamp
     @Column(updatable = false)

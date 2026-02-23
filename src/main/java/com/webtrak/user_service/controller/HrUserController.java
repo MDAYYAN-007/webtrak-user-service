@@ -26,73 +26,59 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/v1/admin/users")
+@RequestMapping("/api/v1/hr/users")
 @RequiredArgsConstructor
-public class AdminUserController {
+public class HrUserController {
 
-    private final AdminUserService adminUserService;
+    private final AdminUserService userService;
 
-    @PostMapping
-    public ResponseEntity<ApiResponse<Object>> createUser(
-            @Valid @RequestBody CreateUserRequest request
+    @GetMapping
+    public ResponseEntity<ApiResponse<Object>> getAllUsers(
+            @RequestParam(required = false) UserStatus status,
+            @RequestParam(required = false) UserType userType,
+            @RequestParam(required = false) String search
     ) {
-        User user = adminUserService.createUser(
-                request.getEmployeeId(),
-                request.getEmail(),
-                request.getUserType()
-        );
+        List<UserResponse> users = userService
+                .getUsers(status, userType, null)
+                .stream()
+                .map(UserResponse::from)
+                .toList();
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
                         new ApiStatus(200, "SUCCESS"),
-                        "User created successfully",
+                        "Users fetched successfully",
+                        users
+                )
+        );
+    }
+
+    @GetMapping("/{employeeId}")
+    public ResponseEntity<ApiResponse<Object>> getUserByEmployeeId(
+            @PathVariable String employeeId
+    ) {
+        User user = userService.getUserByEmployeeId(employeeId);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        new ApiStatus(200, "SUCCESS"),
+                        "User fetched successfully",
                         UserResponse.from(user)
                 )
         );
     }
 
-    @PostMapping("/bulk-upload")
-    public ResponseEntity<ApiResponse<Object>> bulkUploadUsers(
-            @RequestParam("file") MultipartFile file
-    ) {
-        BulkUploadResult result = adminUserService.bulkUploadUsers(file);
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(
-                        new ApiStatus(200, "SUCCESS"),
-                        "Bulk upload completed",
-                        result
-                )
-        );
-    }
-
-    @PostMapping("/{userId}/roles")
-    public ResponseEntity<ApiResponse<Object>> assignRole(
+    @PutMapping("/{userId}")
+    public ResponseEntity<ApiResponse<Object>> updateUser(
             @PathVariable Long userId,
-            @RequestBody Map<String, Role> request
+            @Valid @RequestBody AdminUpdateUserRequest request
     ) {
-        adminUserService.assignRole(userId, request.get("role"));
+        User user = userService.updateUserByAdmin(userId, request);
 
         return ResponseEntity.ok(
                 new ApiResponse<>(
                         new ApiStatus(200, "SUCCESS"),
-                        "Role updated successfully",
-                        null
-                )
-        );
-    }
-
-    @PatchMapping("/{userId}/status")
-    public ResponseEntity<ApiResponse<Object>> updateStatus(
-            @PathVariable Long userId,
-            @RequestParam UserStatus status
-    ) {
-        User user = adminUserService.updateUserStatus(userId, status);
-
-        return ResponseEntity.ok(
-                new ApiResponse<>(
-                        new ApiStatus(200, "SUCCESS"),
-                        "User status updated successfully",
+                        "User updated successfully",
                         UserResponse.from(user)
                 )
         );
