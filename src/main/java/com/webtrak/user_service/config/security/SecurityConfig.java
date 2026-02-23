@@ -52,7 +52,8 @@ public class SecurityConfig {
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/forgot-password",
                                 "/api/v1/auth/reset-password",
-                                "/internal/**"
+                                "/internal/**",
+                                "/actuator/**"
                         ).permitAll()
                         // Only ADMIN can access admin APIs
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")

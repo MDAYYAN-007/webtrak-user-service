@@ -27,3 +27,18 @@ spring:
 jwt:
   secret: Wvl7+TD7zbOxcZ8hnx8KFUeWjVjg06nBtr7mV6wPF+7NfN5uGuwhWRqdHAXxfztb1tGziX+b9en7qryY1eZbog==
   expiration: 604800000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+  info:
+    env:
+      enabled: true
+
+springdoc:
+  show-actuator: true
