@@ -34,11 +34,17 @@ management:
       exposure:
         include: health,info,metrics,prometheus
   endpoint:
+    prometheus:
+      enabled: true
     health:
       show-details: when_authorized
   info:
     env:
       enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
 
 springdoc:
   show-actuator: true
